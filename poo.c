@@ -16,7 +16,7 @@ struct statistics {
 };
 
 double mean(double z[], int n);
-double standardDeviation(int x[], int n);
+double standardDeviation(double x[], int n);
 double* createSortedCopy(const double x[], int n);
 struct statistics getStatistics(double x[], int n);
 double median(double x[], int n);
@@ -35,7 +35,9 @@ int main(){
       break;
     }
 
-    if (strncmp(input, "mean", 4) == 0) {
+    //new function for individual calculation combined
+    
+    if(strncmp(input, "mean", 4) == 0 || strncmp(input, "stdev", 5) == 0 || strncmp(input, "med", 3) == 0 || strncmp(input, "median", 6) == 0){
       int length;
       printf("How long is your dataset? ");
       if (scanf("%d", &length) != 1 || length <= 0) {
@@ -44,7 +46,7 @@ int main(){
           continue;
       }
 
-      int *data = malloc(length * sizeof(int));
+      double *data = malloc(length * sizeof(double));
       if (!data) {
           printf("Memory allocation failed\n");
           continue;
@@ -52,7 +54,7 @@ int main(){
 
       for (int i = 0; i < length; i++) {
           printf("Enter number %d: ", i+1);
-          if (scanf("%d", &data[i]) != 1) {
+          if (scanf("%lf", &data[i]) != 1) {
               printf("Invalid input\n");
               free(data);
               while (getchar() != '\n');
@@ -60,40 +62,18 @@ int main(){
           }
       }
 
-      printf("The mean of that dataset is %.2f\n", mean(data, length));
+      if(strncmp(input, "mean", 4) == 0){
+        printf("The mean of that dataset is %.2f\n", mean(data, length));
+      }else if(strncmp(input, "stdev", 5) == 0){
+        printf("The standard deviation of that dataset is %.2f\n", standardDeviation(data, length));
+      }else{
+        printf("The median of that dataset is %.2f\n", median(data, length));
+      }
 
       free(data);  // very important!
     }
 
-    if (strncmp(input, "stdev", 5) == 0) {
-      int length;
-      printf("How long is your dataset? ");
-      if (scanf("%d", &length) != 1 || length <= 0) {
-          printf("Invalid length\n");
-          while (getchar() != '\n'); // clear input buffer
-          continue;
-      }
-
-      int *data = malloc(length * sizeof(int));
-      if (!data) {
-          printf("Memory allocation failed\n");
-          continue;
-      }
-
-      for (int i = 0; i < length; i++) {
-          printf("Enter number %d: ", i+1);
-          if (scanf("%d", &data[i]) != 1) {
-              printf("Invalid input\n");
-              free(data);
-              while (getchar() != '\n');
-              continue;
-          }
-      }
-
-      printf("The mean of that dataset is %.2f\n", standardDeviation(data, length));
-
-      free(data);  // very important!
-    }
+    
   }
 }
 
@@ -105,7 +85,7 @@ double mean(double z[], int n){
   return (double) total/n;
 }
 
-double standardDeviation(int x[], int n){
+double standardDeviation(double x[], int n){
   double y = 0;
   double m = mean(x, n);
   for(int i = 0; i < n; i++){
@@ -125,7 +105,7 @@ double* createSortedCopy(const double x[], int n) {
     for (int i = 0; i < n - 1; i++) {
       for (int j = 0; j < n - i - 1; j++) {
           if (ret[j] > ret[j + 1]) {
-              int temp = ret[j];
+              double temp = ret[j];
               ret[j] = ret[j + 1];
               ret[j + 1] = temp;
           }
@@ -135,12 +115,19 @@ double* createSortedCopy(const double x[], int n) {
     return ret;
 }
 
-double median(double x[], int n){
-  double y[256];
-  memcpy(y, createSortedCopy(x, n), n*sizeof(double));
-  if(n % 2 == 0){
-    
-  }
+double median(double x[], int n) {
+    double* sorted = createSortedCopy(x, n);
+    if (!sorted) return 0.0; // or handle error
+
+    double result;
+    if (n % 2 == 1) {
+        result = sorted[n/2];
+    } else {
+        result = (sorted[n/2 - 1] + sorted[n/2]) / 2.0;
+    }
+
+    free(sorted);
+    return result;
 }
 
 struct statistics getStatistics(double x[], int n){
